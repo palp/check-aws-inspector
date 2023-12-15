@@ -1,7 +1,6 @@
 import * as core from '@actions/core';
 import { getImageScanFindings } from './ecr';
 import { ScanFindings, findingSeverities } from './scanner';
-const POLL_RATE = 5;
 
 run();
 export async function run() {
@@ -18,12 +17,14 @@ export async function run() {
   const consistencyDelayInput = core.getInput('consistency-delay', {
     trimWhitespace: true,
   });
+  const pollRateInput = core.getInput('poll-rate', { trimWhitespace: true })
+
 
   const ignoreList = splitIgnoreList(ignoreInput);
   const failOn = failOnInput === '' ? undefined : failOnInput;
   const registryId = registryIdInput === '' ? undefined : registryIdInput;
 
-  if (validateInput(registryId, failOn, timeoutInput, consistencyDelayInput)) {
+  if (validateInput(registryId, failOn, timeoutInput, consistencyDelayInput, pollRateInput)) {
     try {
       const scanFindings: ScanFindings = await getImageScanFindings(
         repositoryInput,
@@ -31,7 +32,7 @@ export async function run() {
         tagInput,
         ignoreList,
         +timeoutInput,
-        POLL_RATE,
+        +pollRateInput,
         +consistencyDelayInput,
         failOn,
       );
@@ -55,6 +56,7 @@ function validateInput(
   failOn: string | undefined,
   timeout: string,
   consistencyDelay: string,
+  pollRate: string,
 ): boolean {
   if (registryId != undefined && !/^\d{12}$/.test(registryId)) {
     core.setFailed(
@@ -71,6 +73,10 @@ function validateInput(
     core.setFailed(
       `Invalid consistency-delay: ${consistencyDelay}. Must be a positive integer`,
     );
+    return false;
+  } else if (!isStringPositiveInteger(pollRate)) {
+    core.setFailed(
+      `Invalid poll rate: ${pollRate}. Must be a positive integer`);
     return false;
   }
   return true;

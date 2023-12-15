@@ -24,6 +24,10 @@ inputs:
   consistency-delay:
     description: 'Time in seconds between subsequent attempts to retrieve consistent scan findings'
     required: true
+  poll-rate:
+    description: 'Time in seconds between polling attempts when scan is pending or in progress.'
+    required: false
+    default: 5
 
 outputs:
   findingSeverityCounts:
