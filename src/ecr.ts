@@ -111,7 +111,7 @@ async function pollForScanCompletion(
       } else if (resp.imageScanStatus?.status === 'ACTIVE') {
         core.info(`Scan status is "Active"`);
       } else {
-        throw new Error(`Unknown status: ${resp.imageScanStatus!.status}`);
+        throw new Error(`Unknown status (not ACTIVE, PENDING, or COMPLETE): ${resp.imageScanStatus!.status}`);
       }
     } catch (err) {
       if (err instanceof ImageNotFoundException) {
