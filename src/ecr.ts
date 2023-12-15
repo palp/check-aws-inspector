@@ -108,6 +108,8 @@ async function pollForScanCompletion(
         return;
       } else if (resp.imageScanStatus?.status === 'PENDING') {
         core.info(`Scan status is "Pending"`);
+      } else if (resp.imageScanStatus?.status === 'ACTIVE') {
+        core.info(`Scan status is "Active"`);
       } else {
         throw new Error(`Unknown status: ${resp.imageScanStatus!.status}`);
       }
