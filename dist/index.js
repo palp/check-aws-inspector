@@ -28129,15 +28129,12 @@ async function pollForScanCompletion(command, delay, timeout) {
         try {
             core.info(`Polling for complete scan...`);
             const resp = await client.send(command);
-            if (resp.imageScanStatus?.status === 'COMPLETE') {
+            if (resp.imageScanStatus?.status === 'COMPLETE' || resp.imageScanStatus?.status === 'ACTIVE') {
                 core.info(`Scan complete!`);
                 return;
             }
             else if (resp.imageScanStatus?.status === 'PENDING') {
                 core.info(`Scan status is "Pending"`);
-            }
-            else if (resp.imageScanStatus?.status === 'ACTIVE') {
-                core.info(`Scan status is "Active"`);
             }
             else {
                 throw new Error(`Unknown status: ${resp.imageScanStatus.status}`);
