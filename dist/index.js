@@ -28300,7 +28300,6 @@ exports.splitIgnoreList = exports.run = void 0;
 const core = __importStar(__nccwpck_require__(42186));
 const ecr_1 = __nccwpck_require__(27918);
 const scanner_1 = __nccwpck_require__(83232);
-const POLL_RATE = 5;
 run();
 async function run() {
     const repositoryInput = core.getInput('repository', { trimWhitespace: true });
@@ -28316,12 +28315,13 @@ async function run() {
     const consistencyDelayInput = core.getInput('consistency-delay', {
         trimWhitespace: true,
     });
+    const pollRateInput = core.getInput('poll-rate', { trimWhitespace: true });
     const ignoreList = splitIgnoreList(ignoreInput);
     const failOn = failOnInput === '' ? undefined : failOnInput;
     const registryId = registryIdInput === '' ? undefined : registryIdInput;
-    if (validateInput(registryId, failOn, timeoutInput, consistencyDelayInput)) {
+    if (validateInput(registryId, failOn, timeoutInput, consistencyDelayInput, pollRateInput)) {
         try {
-            const scanFindings = await (0, ecr_1.getImageScanFindings)(repositoryInput, registryId, tagInput, ignoreList, +timeoutInput, POLL_RATE, +consistencyDelayInput, failOn);
+            const scanFindings = await (0, ecr_1.getImageScanFindings)(repositoryInput, registryId, tagInput, ignoreList, +timeoutInput, +pollRateInput, +consistencyDelayInput, failOn);
             core.setOutput('findingSeverityCounts', scanFindings.findingSeverityCounts);
             if (scanFindings.errorMessage) {
                 core.setFailed(scanFindings.errorMessage);
@@ -28335,7 +28335,7 @@ async function run() {
     }
 }
 exports.run = run;
-function validateInput(registryId, failOn, timeout, consistencyDelay) {
+function validateInput(registryId, failOn, timeout, consistencyDelay, pollRate) {
     if (registryId != undefined && !/^\d{12}$/.test(registryId)) {
         core.setFailed(`Invalid registry-id: ${registryId}. Must be 12 digit number`);
         return false;
@@ -28350,6 +28350,10 @@ function validateInput(registryId, failOn, timeout, consistencyDelay) {
     }
     else if (!isStringPositiveInteger(consistencyDelay)) {
         core.setFailed(`Invalid consistency-delay: ${consistencyDelay}. Must be a positive integer`);
+        return false;
+    }
+    else if (!isStringPositiveInteger(pollRate)) {
+        core.setFailed(`Invalid poll rate: ${pollRate}. Must be a positive integer`);
         return false;
     }
     return true;
